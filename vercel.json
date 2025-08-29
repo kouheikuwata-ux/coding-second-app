@@ -1,0 +1,15 @@
+{
+    "builds": [
+      {
+        "src": "index.html",
+        "use": "@vercel/static"
+      }
+    ],
+    "analytics": {
+      "disabled": true
+    },
+    "speedInsights": {
+      "disabled": true
+    }
+  }
+  
