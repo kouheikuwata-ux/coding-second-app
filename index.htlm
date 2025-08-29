@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コード練習アプリ</title>
+    <style>
+        /* 全体の基本スタイル設定 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* スマホでも見やすいフォント設定 */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* アプリ全体を囲むコンテナ */
+        .app-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* ヘッダー部分のスタイル */
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        /* 進捗表示バー */
+        .progress-container {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 5px;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        /* レッスン選択メニュー */
+        .lesson-menu {
+            display: flex;
+            overflow-x: auto;
+            background: #f8f9fa;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .lesson-tab {
+            min-width: 120px;
+            padding: 10px 15px;
+            margin: 0 5px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 14px;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .lesson-tab.active {
+            background: #4facfe;
+            color: white;
+            border-color: #4facfe;
+        }
+
+        .lesson-tab.completed {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        /* メインコンテンツ部分 */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 140px);
+        }
+
+        /* 教材テキスト部分 */
+        .lesson-content {
+            flex: 1;
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #ddd;
+            min-height: 300px;
+        }
+
+        .lesson-content h2 {
+            color: #4facfe;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .lesson-content h3 {
+            color: #495057;
+            margin: 20px 0 10px 0;
+            font-size: 16px;
+        }
+
+        .lesson-content p {
+            line-height: 1.8;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .lesson-content code {
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #e83e8c;
+            font-weight: bold;
+        }
+
+        .lesson-content pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* コーディング部分 */
+        .coding-area {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 500px;
+        }
+
+        /* ステップ表示 */
+        .step-indicator {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #1976d2;
+            text-align: center;
+        }
+
+        /* コピー用コード表示 */
+        .copy-code-section {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .copy-code-label {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .copy-code {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre;
+            overflow-x: auto;
+            margin-bottom: 10px;
+            border: 2px solid #4a5568;
+        }
+
+        .copy-btn {
+            background: #ffc107;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: #212529;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #e0a800;
+            transform: translateY(-1px);
+        }
+
+        .preview-btn {
+            background: #17a2b8;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preview-btn:hover {
+            background: #138496;
+            transform: translateY(-1px);
+        }
+
+        /* エディターラベル */
+        .editor-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* コードエディタ */
+        .code-editor {
+            width: 100%;
+            height: 150px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            background: #f8f9fa;
+            line-height: 1.4;
+        }
+
+        .code-editor:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: white;
+        }
+
+        /* ボタンエリア */
+        .button-row {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        /* ボタン共通スタイル */
+        .btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        /* 結果表示エリア */
+        .output-area {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            border: 2px solid #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .output-success {
+            background: #22543d;
+            border-color: #38a169;
+            color: #68d391;
+        }
+
+        .output-error {
+            background: #742a2a;
+            border-color: #e53e3e;
+            color: #fc8181;
+        }
+
+        /* 説明セクション */
+        .explanation-section {
+            background: #e8f5e8;
+            border: 2px solid #28a745;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .explanation-title {
+            font-weight: bold;
+            color: #155724;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .explanation-text {
+            color: #155724;
+            line-height: 1.6;
+        }
+
+        /* モーダル */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        /* スマホ対応 */
+        @media (max-width: 768px) {
+            .coding-area {
+                min-height: 600px;
+            }
+            
+            .btn {
+                min-width: 80px;
+                font-size: 12px;
+                padding: 10px 15px;
+            }
+
+            .copy-code {
+                font-size: 12px;
+            }
+
+            .code-editor {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="header">
+            <h1>📱 コード練習アプリ</h1>
+            <p>まずは真似して書いてみよう！</p>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div id="progressText">進捗: 0%</div>
+        </header>
+
+        <div class="lesson-menu" id="lessonMenu"></div>
+
+        <div class="main-content">
+            <div class="lesson-content" id="lessonContent"></div>
+
+            <div class="coding-area">
+                <div class="step-indicator" id="stepIndicator">
+                    ステップ1: まずは下のコードをそのまま書き写してみよう！
+                </div>
+
+                <div class="copy-code-section" id="copyCodeSection">
+                    <div class="copy-code-label">
+                        👆 まずはこのコードをそのまま書き写してください
+                    </div>
+                    <div class="copy-code" id="copyCode"></div>
+                    <button class="copy-btn" id="copyBtn">📋 コピー</button>
+                    <button class="preview-btn" id="previewBtn">👀 プレビュー</button>
+                </div>
+
+                <div class="editor-label">
+                    ✏️ ここに上のコードを書き写してください：
+                </div>
+                
+                <textarea 
+                    class="code-editor" 
+                    id="codeEditor" 
+                    placeholder="上のコードをここに書き写してください...">
+                </textarea>
+
+                <div class="button-row">
+                    <button class="btn btn-primary" id="runBtn">▶️ 実行</button>
+                    <button class="btn btn-secondary" id="hintBtn">💡 ヒント</button>
+                    <button class="btn btn-warning" id="showAnswerBtn">📖 完全な解答</button>
+                </div>
+
+                <div class="editor-label">📤 実行結果：</div>
+                <div class="output-area" id="outputArea">
+                    ここに実行結果が表示されます
+                </div>
+
+                <div class="explanation-section" id="explanationSection" style="display: none;">
+                    <div class="explanation-title">
+                        🔍 コードの動作説明
+                    </div>
+                    <div class="explanation-text" id="explanationText"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">×</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        // ========================================
+        // レッスンデータの定義
+        // ========================================
+        
+        const lessons = [
+            {
+                id: 1,
+                title: "文字を表示してみよう",
+                content: `
+                    <h2>📝 レッスン1: 文字を表示してみよう</h2>
+                    <p>プログラミングの第一歩は「文字を表示すること」です。</p>
+                    <p>JavaScriptでは <code>console.log()</code> を使って文字を表示できます。</p>
+                    
+                    <h3>🎯 今回の目標：</h3>
+                    <p><strong>「こんにちは、世界！」</strong>という文字を表示してみましょう。</p>
+                    
+                    <h3>📚 覚えること：</h3>
+                    <p>• <code>console.log()</code> = 文字を表示する命令</p>
+                    <p>• 文字は <code>" "</code> で囲む</p>
+                    <p>• 命令の最後には <code>;</code> をつける</p>
+                `,
+                copyCode: 'console.log("こんにちは、世界！");',
+                hint: "console.log() の中に、ダブルクォートで囲んだ文字を書きます。文字列は必ずダブルクォートで囲むことを忘れずに！",
+                explanation: `このコードの動作説明：
+
+1. console.log() → 「コンソールに表示しなさい」という命令
+2. "こんにちは、世界！" → 表示したい文字（文字列）
+3. ; → 命令の終わりを示す記号
+
+つまり「"こんにちは、世界！"という文字をコンソールに表示しなさい」という意味になります。`,
+                checkFunction: (output) => output.includes("こんにちは、世界！")
+            },
+            {
+                id: 2,
+                title: "変数を使ってみよう",
+                content: `
+                    <h2>📦 レッスン2: 変数を使ってみよう</h2>
+                    <p>変数は「データを入れる箱」のようなものです。</p>
+                    <p>一度作った変数は、何度でも使い回すことができます。</p>
+                    
+                    <h3>🎯 今回の目標：</h3>
+                    <p><strong>「私の名前は○○です」</strong>を変数を使って表示しましょう。</p>
+                    
+                    <h3>📚 覚えること：</h3>
+                    <p>• <code>let</code> = 変数を作る命令</p>
+                    <p>• <code>=</code> = 変数にデータを入れる</p>
+                    <p>• <code>+</code> = 文字をつなげる</p>
+                `,
+                copyCode: 'let name = "太郎";\nconsole.log("私の名前は" + name + "です");',
+                hint: "まず let で変数を作り、その後で console.log() の中で + を使って文字をつなげます。文字列と変数を + でつなげることができます。",
+                explanation: `このコードの動作説明：
+
+1. let name = "太郎"; → nameという名前の変数を作り、"太郎"というデータを入れる
+2. console.log("私の名前は" + name + "です"); → 3つの部分をつなげて表示
+   - "私の名前は" (文字)
+   - name (変数の中身 = "太郎")  
+   - "です" (文字)
+
+結果: "私の名前は太郎です" が表示されます。`,
+                checkFunction: (output) => output.includes("私の名前は") && output.includes("です")
+            },
+            {
+                id: 3,
+                title: "if文で条件分岐",
+                content: `
+                    <h2>🔀 レッスン3: if文で条件分岐</h2>
+                    <p>if文を使うと「もし○○なら△△する」という処理ができます。</p>
+                    <p>プログラムが自分で判断して、違う処理を実行します。</p>
+                    
+                    <h3>🎯 今回の目標：</h3>
+                    <p><strong>天気によってメッセージを変える</strong>プログラムを作りましょう。</p>
+                    
+                    <h3>📚 覚えること：</h3>
+                    <p>• <code>if (条件) { }</code> = もし条件が正しいなら { } の中を実行</p>
+                    <p>• <code>else { }</code> = そうでなければ { } の中を実行</p>
+                    <p>• <code>===</code> = 同じかどうか比較する</p>
+                `,
+                copyCode: 'let weather = "晴れ";\nif (weather === "晴れ") {\n    console.log("お出かけ日和です！");\n} else {\n    console.log("家でゆっくり過ごしましょう");\n}',
+                hint: 'まず変数 weather に "晴れ" を入れます。そして if文で weather === "晴れ" かどうかを判断し、条件に応じて違うメッセージを表示します。',
+                explanation: `このコードの動作説明：
+
+1. let weather = "晴れ"; → weatherという変数に"晴れ"を入れる
+2. if (weather === "晴れ") → 「もしweatherが"晴れ"と同じなら」
+3. { console.log("お出かけ日和です！"); } → 条件が正しい時に実行される
+4. else → 「そうでなければ」
+5. { console.log("家でゆっくり過ごしましょう"); } → 条件が違う時に実行される
+
+今回はweatherが"晴れ"なので、「お出かけ日和です！」が表示されます。`,
+                checkFunction: (output) => output.includes("お出かけ日和です")
+            },
+            {
+                id: 4,
+                title: "for文で繰り返し",
+                content: `
+                    <h2>🔄 レッスン4: for文で繰り返し</h2>
+                    <p>for文を使うと、同じ処理を何回も自動で繰り返すことができます。</p>
+                    <p>手作業では大変な処理も、プログラムなら一瞬です！</p>
+                    
+                    <h3>🎯 今回の目標：</h3>
+                    <p><strong>1から5まで順番に数字を表示</strong>してみましょう。</p>
+                    
+                    <h3>📚 覚えること：</h3>
+                    <p>• <code>for (開始; 条件; 増加) { }</code> = 繰り返しの設定</p>
+                    <p>• <code>let i = 1</code> = カウンター変数の開始値</p>
+                    <p>• <code>i <= 5</code> = 繰り返し続ける条件</p>
+                    <p>• <code>i++</code> = カウンターを1つ増やす</p>
+                `,
+                copyCode: 'for (let i = 1; i <= 5; i++) {\n    console.log(i + "番目");\n}',
+                hint: "for文の基本形は for (開始値; 終了条件; 増加) です。i という変数が1から始まって、5以下の間繰り返され、毎回1ずつ増えていきます。",
+                explanation: `このコードの動作説明：
+
+1. for (let i = 1; i <= 5; i++) → 繰り返しの設定
+   - let i = 1 → カウンター変数iを1から開始
+   - i <= 5 → iが5以下の間は繰り返し続ける
+   - i++ → 毎回iを1つ増やす
+
+2. { console.log(i + "番目"); } → 繰り返し実行される処理
+
+実行の流れ：
+- 1回目: i=1 → "1番目" を表示
+- 2回目: i=2 → "2番目" を表示  
+- 3回目: i=3 → "3番目" を表示
+- 4回目: i=4 → "4番目" を表示
+- 5回目: i=5 → "5番目" を表示
+- i=6になるとi <= 5が偽になり終了`,
+                checkFunction: (output) => {
+                    return output.includes("1番目") && output.includes("2番目") && 
+                           output.includes("3番目") && output.includes("4番目") && output.includes("5番目");
+                }
+            },
+            {
+                id: 5,
+                title: "関数を作ってみよう",
+                content: `
+                    <h2>⚙️ レッスン5: 関数を作ってみよう</h2>
+                    <p>関数は「処理をまとめたもの」です。一度作れば何度でも使えます。</p>
+                    <p>よく使う処理を関数にしておくと、プログラムがスッキリします。</p>
+                    
+                    <h3>🎯 今回の目標：</h3>
+                    <p><strong>挨拶メッセージを作る関数</strong>を作って使ってみましょう。</p>
+                    
+                    <h3>📚 覚えること：</h3>
+                    <p>• <code>function 名前() { }</code> = 関数を作る</p>
+                    <p>• <code>名前()</code> = 関数を実行する</p>
+                    <p>• <code>return</code> = 結果を返す</p>
+                `,
+                copyCode: 'function greet(name) {\n    return "こんにちは、" + name + "さん！";\n}\n\nconsole.log(greet("太郎"));\nconsole.log(greet("花子"));',
+                hint: "function で関数を作り、return で結果を返します。作った関数は greet(\"名前\") のように呼び出して使います。",
+                explanation: `このコードの動作説明：
+
+1. function greet(name) { } → greetという名前の関数を作る
+   - (name) → この関数は名前を受け取る
+   
+2. return "こんにちは、" + name + "さん！"; → 挨拶文を作って返す
+   - 受け取った名前と文字をつなげる
+   
+3. console.log(greet("太郎")); → 関数を実行
+   - greet("太郎") が実行される
+   - "こんにちは、太郎さん！" が返される
+   - それをconsole.logで表示
+   
+4. console.log(greet("花子")); → 同じ関数を別の名前で実行
+   - "こんにちは、花子さん！" が表示される
+
+関数を作ることで、同じような処理を簡単に再利用できます！`,
+                checkFunction: (output) => output.includes("こんにちは、太郎さん") && output.includes("こんにちは、花子さん")
+            },
+            {
+                id: 6,
+                title: "配列を使ってみよう",
+                content: `
+                    <h2>📋 レッスン6: 配列を使ってみよう</h2>
+                    <p>配列は「複数のデータをまとめて入れる箱」です。</p>
+                    <p>たくさんのデータを効率的に管理できます。</p>
+                    
+                    <h3>🎯 今回の目標：</h3>
+                    <p><strong>果物のリスト</strong>を配列に入れて、すべて表示してみましょう。</p>
+                    
+                    <h3>📚 覚えること：</h3>
+                    <p>• <code>[]</code> = 配列を作る</p>
+                    <p>• <code>配列名[0]</code> = 最初の要素を取得（0から数える）</p>
+                    <p>• <code>配列名.length</code> = 配列の長さを取得</p>
+                `,
+                copyCode: 'let fruits = ["りんご", "バナナ", "オレンジ", "ぶどう"];\n\nfor (let i = 0; i < fruits.length; i++) {\n    console.log((i + 1) + "番目: " + fruits[i]);\n}',
+                hint: "配列は [] で作り、中に文字列を , で区切って入れます。for文と組み合わせてすべての要素を表示できます。",
+                explanation: `このコードの動作説明：
+
+1. let fruits = ["りんご", "バナナ", "オレンジ", "ぶどう"]; → 果物の配列を作成
+   - 配列は [] で囲む
+   - 要素は , で区切る
+   - 文字列は " " で囲む
+
+2. for (let i = 0; i < fruits.length; i++) → 配列の長さ分繰り返し
+   - i = 0 → 配列は0から数える
+   - i < fruits.length → 配列の長さ未満の間繰り返す
+   - fruits.length は4なので、i は 0,1,2,3 と変化
+
+3. console.log((i + 1) + "番目: " + fruits[i]); → 各要素を表示
+   - (i + 1) → 人間にわかりやすく1番目から表示
+   - fruits[i] → 配列のi番目の要素を取得
+
+実行結果：1番目: りんご、2番目: バナナ...と表示されます`,
+                checkFunction: (output) => output.includes("りんご") && output.includes("バナナ") && output.includes("1番目")
+            },
+            {
+                id: 7,
+                title: "オブジェクトを使ってみよう",
+                content: `
+                    <h2>🏷️ レッスン7: オブジェクトを使ってみよう</h2>
+                    <p>オブジェクトは「名前付きでデータを管理する仕組み」です。</p>
+                    <p>関連するデータをひとまとめにして扱えます。</p>
+                    
+                    <h3>🎯 今回の目標：</h3>
+                    <p><strong>人の情報</strong>をオブジェクトにまとめて表示してみましょう。</p>
+                    
+                    <h3>📚 覚えること：</h3>
+                    <p>• <code>{}</code> = オブジェクトを作る</p>
+                    <p>• <code>キー: 値</code> = データをペアで保存</p>
+                    <p>• <code>オブジェクト.キー</code> = 値を取得</p>
+                `,
+                copyCode: 'let person = {\n    name: "田中太郎",\n    age: 25,\n    hobby: "読書"\n};\n\nconsole.log("名前: " + person.name);\nconsole.log("年齢: " + person.age + "歳");\nconsole.log("趣味: " + person.hobby);',
+                hint: "オブジェクトは {} で作り、キー: 値 の形でデータを入れます。person.name のようにドット記法でアクセスできます。",
+                explanation: `このコードの動作説明：
+
+1. let person = { ... }; → personというオブジェクトを作成
+   - {} でオブジェクトを囲む
+   - キー: 値 の形でデータを保存
+   - , で各ペアを区切る
+
+2. name: "田中太郎" → nameというキーに"田中太郎"という値を保存
+   age: 25 → ageというキーに25という数値を保存
+   hobby: "読書" → hobbyというキーに"読書"という値を保存
+
+3. person.name → オブジェクトのnameの値を取得
+   person.age → オブジェクトのageの値を取得
+   person.hobby → オブジェクトのhobbyの値を取得
+
+オブジェクトを使うと、関連するデータを整理して管理できます！`,
+                checkFunction: (output) => output.includes("田中太郎") && output.includes("25歳") && output.includes("読書")
+            },
+            {
+                id: 8,
+                title: "配列とfor文の応用",
+                content: `
+                    <h2>🔄 レッスン8: 配列とfor文の応用</h2>
+                    <p>配列の中の数字を使って計算をしてみましょう。</p>
+                    <p>プログラムで自動的に合計を求めることができます。</p>
+                    
+                    <h3>🎯 今回の目標：</h3>
+                    <p><strong>テストの点数</strong>の合計と平均を計算してみましょう。</p>
+                    
+                    <h3>📚 覚えること：</h3>
+                    <p>• 配列内の数値を順番に処理</p>
+                    <p>• 変数に値を積み重ねる（累積）</p>
+                    <p>• 平均の計算（合計 ÷ 個数）</p>
+                `,
+                copyCode: 'let scores = [85, 92, 78, 96, 88];\nlet total = 0;\n\nfor (let i = 0; i < scores.length; i++) {\n    total = total + scores[i];\n    console.log((i + 1) + "回目のテスト: " + scores[i] + "点");\n}\n\nlet average = total / scores.length;\nconsole.log("合計点: " + total + "点");\nconsole.log("平均点: " + average + "点");',
+                hint: "変数totalを0で初期化し、for文でscores配列の各要素をtotalに足していきます。最後に合計をテスト回数で割って平均を求めます。",
+                explanation: `このコードの動作説明：
+
+1. let scores = [85, 92, 78, 96, 88]; → テストの点数を配列に保存
+2. let total = 0; → 合計を入れる変数を0で初期化
+
+3. for文で配列の各要素を処理：
+   - total = total + scores[i]; → 現在の点数を合計に加算
+   - 1回目: total = 0 + 85 = 85
+   - 2回目: total = 85 + 92 = 177
+   - 3回目: total = 177 + 78 = 255
+   - 4回目: total = 255 + 96 = 351  
+   - 5回目: total = 351 + 88 = 439
+
+4. let average = total / scores.length; → 平均を計算
+   - 439 ÷ 5 = 87.8
+
+5. 結果を表示 → 合計439点、平均87.8点
+
+このように、プログラムで自動計算ができます！`,
+                checkFunction: (output) => output.includes("合計点: 439点") && output.includes("平均点: 87.8点")
+            },
+            {
+                id: 9,
+                title: "関数で計算機を作ろう",
+                content: `
+                    <h2>🧮 レッスン9: 関数で計算機を作ろう</h2>
+                    <p>いろいろな計算をする関数を作ってみましょう。</p>
+                    <p>関数を組み合わせて、便利な計算機ができます。</p>
+                    
+                    <h3>🎯 今回の目標：</h3>
+                    <p><strong>四則演算（足し算、引き算、掛け算、割り算）</strong>ができる関数を作りましょう。</p>
+                    
+                    <h3>📚 覚えること：</h3>
+                    <p>• 複数の関数を作る</p>
+                    <p>• 数値計算の基本演算子（+, -, *, /）</p>
+                    <p>• 関数を使い分ける</p>
+                `,
+                copyCode: 'function add(a, b) {\n    return a + b;\n}\n\nfunction subtract(a, b) {\n    return a - b;\n}\n\nfunction multiply(a, b) {\n    return a * b;\n}\n\nfunction divide(a, b) {\n    return a / b;\n}\n\nconsole.log("10 + 5 = " + add(10, 5));\nconsole.log("10 - 5 = " + subtract(10, 5));\nconsole.log("10 × 5 = " + multiply(10, 5));\nconsole.log("10 ÷ 5 = " + divide(10, 5));',
+                hint: "4つの関数（add, subtract, multiply, divide）をそれぞれ作り、それぞれに適切な計算処理を書きます。",
+                explanation: `このコードの動作説明：
+
+1. function add(a, b) { return a + b; } → 足し算関数
+   - 2つの数値を受け取り、足し算した結果を返す
+
+2. function subtract(a, b) { return a - b; } → 引き算関数  
+   - 2つの数値を受け取り、引き算した結果を返す
+
+3. function multiply(a, b) { return a * b; } → 掛け算関数
+   - JavaScriptでは掛け算は * を使う
+
+4. function divide(a, b) { return a / b; } → 割り算関数
+   - JavaScriptでは割り算は / を使う
+
+5. 各関数を実行：
+   - add(10, 5) → 10 + 5 = 15
+   - subtract(10, 5) → 10 - 5 = 5
+   - multiply(10, 5) → 10 * 5 = 50
+   - divide(10, 5) → 10 / 5 = 2
+
+関数を作ることで、計算処理を再利用できます！`,
+                checkFunction: (output) => output.includes("= 15") && output.includes("= 5") && output.includes("= 50") && output.includes("= 2")
+            },
+            {
+                id: 10,
+                title: "総合演習：成績管理システム",
+                content: `
+                    <h2>🎓 レッスン10: 総合演習：成績管理システム</h2>
+                    <p>これまで学んだことを全部使って、本格的なプログラムを作りましょう！</p>
+                    <p>変数、配列、オブジェクト、関数、for文、if文を組み合わせます。</p>
+                    
+                    <h3>🎯 今回の目標：</h3>
+                    <p><strong>学生の成績を管理するシステム</strong>を作って、合格判定もしてみましょう。</p>
+                    
+                    <h3>📚 今回使うテクニック：</h3>
+                    <p>• オブジェクトの配列</p>
+                    <p>• 関数での判定処理</p>
+                    <p>• 複合条件（複数の条件を組み合わせ）</p>
+                    <p>• 今まで学んだすべての知識の総合活用！</p>
+                `,
+                copyCode: 'let students = [\n    {name: "田中", math: 85, english: 78},\n    {name: "佐藤", math: 92, english: 88},\n    {name: "鈴木", math: 65, english: 72}\n];\n\nfunction checkPass(math, english) {\n    let average = (math + english) / 2;\n    if (average >= 80) {\n        return "優秀";\n    } else if (average >= 70) {\n        return "合格";\n    } else {\n        return "再試験";\n    }\n}\n\nfor (let i = 0; i < students.length; i++) {\n    let student = students[i];\n    let result = checkPass(student.math, student.english);\n    let avg = (student.math + student.english) / 2;\n    \n    console.log(student.name + "さん:");\n    console.log("  数学: " + student.math + "点, 英語: " + student.english + "点");\n    console.log("  平均: " + avg + "点, 判定: " + result);\n    console.log("");\n}',
+                hint: "オブジェクトの配列、判定関数、for文での繰り返し処理を組み合わせます。students配列の各学生に対して成績を計算し、判定結果を表示します。",
+                explanation: `このコードの動作説明：
+
+【データ構造】
+1. students配列 → 学生のデータを管理
+   - 各要素がオブジェクト（名前、数学、英語の点数）
+   - 配列の中にオブジェクトが入っている
+
+【判定関数】  
+2. checkPass関数 → 成績判定のロジック
+   - 平均点を計算
+   - if文で条件分岐（80点以上→優秀、70点以上→合格、それ以下→再試験）
+
+【メイン処理】
+3. for文でstudents配列を順番に処理
+   - students[i] で各学生のオブジェクトを取得
+   - checkPass関数で判定実行
+   - 結果を整理して表示
+
+【実行結果例】
+田中さん: 数学85点、英語78点 → 平均81.5点 → 優秀
+佐藤さん: 数学92点、英語88点 → 平均90点 → 優秀  
+鈴木さん: 数学65点、英語72点 → 平均68.5点 → 再試験
+
+これまで学んだ全ての知識を使った本格的なプログラムです！`,
+                checkFunction: (output) => output.includes("田中さん") && output.includes("平均") && output.includes("判定") && (output.includes("優秀") || output.includes("合格") || output.includes("再試験"))
+            }
+        ];
+
+        // ========================================
+        // アプリの状態管理
+        // ========================================
+        
+        let currentLesson = 1;
+        let completedLessons = new Set();
+
+        // ========================================
+        // DOM要素の取得
+        // ========================================
+        
+        const lessonMenu = document.getElementById('lessonMenu');
+        const lessonContent = document.getElementById('lessonContent');
+        const stepIndicator = document.getElementById('stepIndicator');
+        const copyCodeSection = document.getElementById('copyCodeSection');
+        const copyCode = document.getElementById('copyCode');
+        const copyBtn = document.getElementById('copyBtn');
+        const previewBtn = document.getElementById('previewBtn');
+        const codeEditor = document.getElementById('codeEditor');
+        const outputArea = document.getElementById('outputArea');
+        const runBtn = document.getElementById('runBtn');
+        const hintBtn = document.getElementById('hintBtn');
+        const showAnswerBtn = document.getElementById('showAnswerBtn');
+        const modal = document.getElementById('modal');
+        const modalBody = document.getElementById('modalBody');
+        const modalClose = document.getElementById('modalClose');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const explanationSection = document.getElementById('explanationSection');
+        const explanationText = document.getElementById('explanationText');
+
+        // ========================================
+        // localStorage管理
+        // ========================================
+        
+        function saveProgress() {
+            localStorage.setItem('codeAppProgress', JSON.stringify([...completedLessons]));
+            localStorage.setItem('codeAppCurrentLesson', currentLesson.toString());
+        }
+
+        function loadProgress() {
+            const saved = localStorage.getItem('codeAppProgress');
+            if (saved) {
+                completedLessons = new Set(JSON.parse(saved));
+            }
+            
+            const savedLesson = localStorage.getItem('codeAppCurrentLesson');
+            if (savedLesson) {
+                currentLesson = parseInt(savedLesson);
+            }
+        }
+
+        // ========================================
+        // レッスンメニューの生成
+        // ========================================
+        
+        function createLessonMenu() {
+            lessonMenu.innerHTML = '';
+            
+            lessons.forEach((lesson) => {
+                const tab = document.createElement('button');
+                tab.className = 'lesson-tab';
+                tab.textContent = `${lesson.id}. ${lesson.title}`;
+                
+                if (lesson.id === currentLesson) {
+                    tab.classList.add('active');
+                }
+                if (completedLessons.has(lesson.id)) {
+                    tab.classList.add('completed');
+                }
+                
+                tab.addEventListener('click', () => {
+                    currentLesson = lesson.id;
+                    showLesson(lesson.id);
+                    saveProgress();
+                });
+                
+                lessonMenu.appendChild(tab);
+            });
+        }
+
+        // ========================================
+        // レッスン表示
+        // ========================================
+        
+        function showLesson(lessonId) {
+            const lesson = lessons.find(l => l.id === lessonId);
+            if (!lesson) return;
+            
+            // レッスン内容を表示
+            lessonContent.innerHTML = lesson.content;
+            
+            // コピー用コードを表示
+            copyCode.textContent = lesson.copyCode;
+            
+            // エディタを空にして、プレースホルダーを設定
+            codeEditor.value = '';
+            codeEditor.placeholder = '👆上のコードをここに書き写してください...';
+            
+            // ステップ表示を更新
+            stepIndicator.textContent = 'ステップ1: まずは上のコードをそのまま書き写してみよう！';
+            
+            // 出力エリアをリセット
+            outputArea.textContent = 'ここに実行結果が表示されます';
+            outputArea.className = 'output-area';
+            
+            // 説明セクションを非表示
+            explanationSection.style.display = 'none';
+            
+            // メニュー更新
+            createLessonMenu();
+            updateProgress();
+        }
+
+        // ========================================
+        // コピー機能
+        // ========================================
+        
+        function copyToClipboard() {
+            const lesson = lessons.find(l => l.id === currentLesson);
+            if (!lesson) return;
+            
+            // クリップボードにコピー
+            navigator.clipboard.writeText(lesson.copyCode).then(() => {
+                // ボタンの表示を一時的に変更
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = '✅ コピー完了！';
+                copyBtn.style.background = '#28a745';
+                
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                    copyBtn.style.background = '#ffc107';
+                }, 1500);
+            }).catch(() => {
+                // コピー失敗時は手動で選択
+                const textArea = document.createElement('textarea');
+                textArea.value = lesson.copyCode;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                
+                copyBtn.textContent = '✅ コピー完了！';
+                setTimeout(() => {
+                    copyBtn.textContent = '📋 コピー';
+                }, 1500);
+            });
+        }
+
+        // ========================================
+        // プレビュー機能
+        // ========================================
+        
+        function showPreview() {
+            const lesson = lessons.find(l => l.id === currentLesson);
+            if (!lesson) return;
+            
+            // プレビュー実行
+            const outputs = [];
+            const originalLog = console.log;
+            
+            try {
+                console.log = function(...args) {
+                    outputs.push(args.map(arg => String(arg)).join(' '));
+                };
+                
+                eval(lesson.copyCode);
+                
+                const output = outputs.join('\n');
+                
+                modalBody.innerHTML = `
+                    <h3>👀 プレビュー：このコードを実行すると...</h3>
+                    <div style="background:#2d3748;color:#e2e8f0;padding:15px;border-radius:8px;margin:15px 0;font-family:'Courier New',monospace;">
+                        ${output || '(出力なし)'}
+                    </div>
+                    <p><strong>💡 解説：</strong></p>
+                    <div style="background:#f8f9fa;padding:15px;border-radius:8px;border:2px solid #dee2e6;">
+                        ${lesson.explanation.replace(/\n/g, '<br>')}
+                    </div>
+                    <p style="margin-top:15px;color:#666;">
+                        まずは上のコードを真似して書いてみましょう！<br>
+                        書けたら「▶️ 実行」ボタンを押してください。
+                    </p>
+                `;
+                
+            } catch (error) {
+                modalBody.innerHTML = `
+                    <h3>❌ プレビューエラー</h3>
+                    <p>コードにエラーがあります：${error.message}</p>
+                `;
+            } finally {
+                console.log = originalLog;
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        // ========================================
+        // コード実行機能
+        // ========================================
+        
+        function runCode() {
+            const code = codeEditor.value.trim();
+            const lesson = lessons.find(l => l.id === currentLesson);
+            
+            if (!code) {
+                outputArea.textContent = '⚠️ コードを入力してください';
+                outputArea.className = 'output-area';
+                return;
+            }
+
+            const outputs = [];
+            const originalLog = console.log;
+            
+            try {
+                console.log = function(...args) {
+                    outputs.push(args.map(arg => String(arg)).join(' '));
+                };
+                
+                eval(code);
+                
+                const output = outputs.join('\n');
+                outputArea.textContent = output || '(出力なし)';
+                
+                // 課題チェック
+                if (lesson && lesson.checkFunction(output)) {
+                    outputArea.className = 'output-area output-success';
+                    outputArea.textContent += '\n\n🎉 正解です！素晴らしい！';
+                    
+                    // ステップ表示を更新
+                    stepIndicator.textContent = '🎉 クリア！次のレッスンに進もう！';
+                    stepIndicator.style.background = '#d4edda';
+                    stepIndicator.style.borderColor = '#28a745';
+                    stepIndicator.style.color = '#155724';
+                    
+                    // 説明を表示
+                    explanationText.innerHTML = lesson.explanation.replace(/\n/g, '<br>');
+                    explanationSection.style.display = 'block';
+                    
+                    // 完了マーク
+                    completedLessons.add(currentLesson);
+                    saveProgress();
+                    createLessonMenu();
+                    updateProgress();
+                    
+                } else {
+                    outputArea.className = 'output-area';
+                    
+                    // ヒント表示
+                    if (code.length > 0) {
+                        stepIndicator.textContent = '🤔 まだ正解ではありません。ヒントボタンを押してみてください。';
+                        stepIndicator.style.background = '#fff3cd';
+                        stepIndicator.style.borderColor = '#ffc107';
+                        stepIndicator.style.color = '#856404';
+                    }
+                }
+                
+            } catch (error) {
+                outputArea.textContent = `❌ エラー: ${error.message}\n\n💡 コードをもう一度確認してみてください。`;
+                outputArea.className = 'output-area output-error';
+                
+                stepIndicator.textContent = '❌ エラーが発生しました。コードを見直してみましょう。';
+                stepIndicator.style.background = '#f8d7da';
+                stepIndicator.style.borderColor = '#dc3545';
+                stepIndicator.style.color = '#721c24';
+            } finally {
+                console.log = originalLog;
+            }
+        }
+
+        // ========================================
+        // ヒント・解答機能
+        // ========================================
+        
+        function showHint() {
+            const lesson = lessons.find(l => l.id === currentLesson);
+            if (!lesson) return;
+            
+            modalBody.innerHTML = `
+                <h3>💡 ヒント</h3>
+                <p style="background:#e3f2fd;padding:15px;border-radius:8px;border:2px solid #2196f3;line-height:1.6;">
+                    ${lesson.hint}
+                </p>
+                <h4>📝 お手本コード：</h4>
+                <pre style="background:#2d3748;color:#e2e8f0;padding:15px;border-radius:8px;overflow-x:auto;font-family:'Courier New',monospace;">${lesson.copyCode}</pre>
+                <p style="margin-top:15px;color:#666;">
+                    上のコードを参考に、もう一度チャレンジしてみてください！
+                </p>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        function showAnswer() {
+            const lesson = lessons.find(l => l.id === currentLesson);
+            if (!lesson) return;
+            
+            modalBody.innerHTML = `
+                <h3>📖 完全な解答</h3>
+                <pre style="background:#2d3748;color:#e2e8f0;padding:20px;border-radius:8px;overflow-x:auto;font-family:'Courier New',monospace;margin:15px 0;">${lesson.copyCode}</pre>
+                
+                <h4>🔍 詳しい解説：</h4>
+                <div style="background:#f8f9fa;padding:15px;border-radius:8px;border:2px solid #dee2e6;line-height:1.6;">
+                    ${lesson.explanation.replace(/\n/g, '<br>')}
+                </div>
+                
+                <div style="background:#fff3cd;padding:15px;border-radius:8px;border:2px solid #ffc107;margin-top:15px;">
+                    <strong>📝 練習方法：</strong><br>
+                    解答を見ながらでも構いません。まずは手で書いて実行してみましょう。<br>
+                    何度も書くうちに自然と覚えられます！
+                </div>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+        }
+
+        // ========================================
+        // 進捗表示
+        // ========================================
+        
+        function updateProgress() {
+            const completionRate = Math.round((completedLessons.size / lessons.length) * 100);
+            progressBar.style.width = completionRate + '%';
+            progressText.textContent = `進捗: ${completionRate}% (${completedLessons.size}/${lessons.length}レッスン完了)`;
+        }
+
+        // ========================================
+        // キーボードショートカット
+        // ========================================
+        
+        function setupKeyboardShortcuts() {
+            codeEditor.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    e.preventDefault();
+                    const start = this.selectionStart;
+                    const end = this.selectionEnd;
+                    this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+                    this.selectionStart = this.selectionEnd = start + 4;
+                }
+                
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    runCode();
+                }
+            });
+        }
+
+        // ========================================
+        // イベントリスナー設定
+        // ========================================
+        
+        function setupEventListeners() {
+            runBtn.addEventListener('click', runCode);
+            hintBtn.addEventListener('click', showHint);
+            showAnswerBtn.addEventListener('click', showAnswer);
+            copyBtn.addEventListener('click', copyToClipboard);
+            previewBtn.addEventListener('click', showPreview);
+            modalClose.addEventListener('click', closeModal);
+            
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+        }
+
+        // ========================================
+        // アプリ初期化
+        // ========================================
+        
+        function initApp() {
+            console.log('📱 超初心者向けコード練習アプリを初期化中...');
+            
+            loadProgress();
+            createLessonMenu();
+            showLesson(currentLesson);
+            setupEventListeners();
+            setupKeyboardShortcuts();
+            updateProgress();
+            
+            // 初心者向けウェルカムメッセージ
+            if (completedLessons.size === 0) {
+                outputArea.textContent = `🎯 ようこそ！超初心者向けコード練習アプリへ！
+
+📖 使い方（3ステップ）：
+1. 上の黄色い部分のコードをそのまま書き写す
+2. 「▶️ 実行」ボタンを押す
+3. 結果を確認する
+
+💡 困ったときは：
+• 「👀 プレビュー」で動作確認
+• 「💡 ヒント」でアドバイス
+• 「📖 完全な解答」で答えを確認
+
+📋 「コピー」ボタンでコードをコピーできます
+まずは真似から始めましょう！頑張って🚀`;
+            }
+            
+            console.log('🎉 アプリの初期化が完了しました！');
+        }
+
+        // ========================================
+        // DOM読み込み完了時に実行
+        // ========================================
+        
+        document.addEventListener('DOMContentLoaded', initApp);
+        
+        window.addEventListener('beforeunload', saveProgress);
+
+        // ========================================
+        // デバッグ用関数
+        // ========================================
+        
+        window.resetProgress = function() {
+            if (confirm('本当に学習進捗をすべてリセットしますか？')) {
+                localStorage.removeItem('codeAppProgress');
+                localStorage.removeItem('codeAppCurrentLesson');
+                completedLessons.clear();
+                currentLesson = 1;
+                showLesson(1);
+                updateProgress();
+                console.log('🔄 進捗をリセットしました');
+            }
+        };
+        
+        window.completeAllLessons = function() {
+            lessons.forEach(lesson => {
+                completedLessons.add(lesson.id);
+            });
+            saveProgress();
+            createLessonMenu();
+            updateProgress();
+            console.log('🎉 すべてのレッスンを完了にしました');
+        };
+        
+        window.showProgress = function() {
+            console.log('📊 現在の進捗状況:');
+            console.log(`- 現在のレッスン: ${currentLesson}`);
+            console.log(`- 完了したレッスン: [${[...completedLessons].join(', ')}]`);
+            console.log(`- 完了率: ${Math.round((completedLessons.size / lessons.length) * 100)}%`);
+        };
+
+    </script>
+</body>
+</html>
