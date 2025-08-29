@@ -1013,38 +1013,62 @@
             const outputs = [];
             const originalLog = console.log;
             
-            try {
-                console.log = function(...args) {
-                    outputs.push(args.map(arg => String(arg)).join(' '));
-                };
-                
-                eval(lesson.copyCode);
-                
-                const output = outputs.join('\n');
-                
-                modalBody.innerHTML = `
-                    <h3>👀 プレビュー：このコードを実行すると...</h3>
-                    <div style="background:#2d3748;color:#e2e8f0;padding:15px;border-radius:8px;margin:15px 0;font-family:'Courier New',monospace;">
-                        ${output || '(出力なし)'}
-                    </div>
-                    <p><strong>💡 解説：</strong></p>
-                    <div style="background:#f8f9fa;padding:15px;border-radius:8px;border:2px solid #dee2e6;">
-                        ${lesson.explanation.replace(/\n/g, '<br>')}
-                    </div>
-                    <p style="margin-top:15px;color:#666;">
-                        まずは上のコードを真似して書いてみましょう！<br>
-                        書けたら「▶️ 実行」ボタンを押してください。
-                    </p>
-                `;
-                
-            } catch (error) {
-                modalBody.innerHTML = `
-                    <h3>❌ プレビューエラー</h3>
-                    <p>コードにエラーがあります：${error.message}</p>
-                `;
-            } finally {
-                console.log = originalLog;
-            }
+           // 新しいコード（evalを使わない安全な方法）
+try {
+    // Functionコンストラクタを使って、安全なサンドボックス内でコードを実行
+    const safeRun = new Function('console', code);
+    
+    console.log = function(...args) {
+        outputs.push(args.map(arg => String(arg)).join(' '));
+    };
+    
+    // 作成した関数を実行
+    safeRun({ log: console.log });
+    
+    const output = outputs.join('\n');
+    outputArea.textContent = output || '(出力なし)';
+    
+    // 課題チェック
+    if (lesson && lesson.checkFunction(output)) {
+        outputArea.className = 'output-area output-success';
+        outputArea.textContent += '\n\n🎉 正解です！素晴らしい！';
+        
+        stepIndicator.textContent = '🎉 クリア！次のレッスンに進もう！';
+        stepIndicator.style.background = '#d4edda';
+        stepIndicator.style.borderColor = '#28a745';
+        stepIndicator.style.color = '#155724';
+        
+        explanationText.innerHTML = lesson.explanation.replace(/\n/g, '  
+');
+        explanationSection.style.display = 'block';
+        
+        completedLessons.add(currentLesson);
+        saveProgress();
+        createLessonMenu();
+        updateProgress();
+        
+    } else {
+        outputArea.className = 'output-area';
+        if (code.length > 0) {
+            stepIndicator.textContent = '🤔 まだ正解ではありません。ヒントボタンを押してみてください。';
+            stepIndicator.style.background = '#fff3cd';
+            stepIndicator.style.borderColor = '#ffc107';
+            stepIndicator.style.color = '#856404';
+        }
+    }
+    
+} catch (error) {
+    outputArea.textContent = `❌ エラー: ${error.message}\n\n💡 コードをもう一度確認してみてください。`;
+    outputArea.className = 'output-area output-error';
+    
+    stepIndicator.textContent = '❌ エラーが発生しました。コードを見直してみましょう。';
+    stepIndicator.style.background = '#f8d7da';
+    stepIndicator.style.borderColor = '#dc3545';
+    stepIndicator.style.color = '#721c24';
+} finally {
+    console.log = originalLog;
+}
+    
             
             modal.style.display = 'block';
         }
